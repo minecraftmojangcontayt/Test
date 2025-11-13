@@ -1,6 +1,5 @@
 --// Stealer Hub (antes "Steal a Rainbow Friends")
---// Feito por Kevin — GUI fiel ao estilo injection-piter (versão menor e sem delay bug)
-
+--// Feito por Kevin — GUI fiel ao estilo injection-piter (versão menor)
 if game.CoreGui:FindFirstChild("StealerHubGUI") then
     game.CoreGui.StealerHubGUI:Destroy()
 end
@@ -13,13 +12,12 @@ local player = Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "StealerHubGUI"
 screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
 screenGui.Parent = game.CoreGui
 
--- MAIN FRAME
+-- MAIN FRAME (menor)
 local main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.new(0, 260, 0, 180)
+main.Size = UDim2.new(0, 260, 0, 215)
 main.Position = UDim2.new(0.5, -130, 0.45, -90)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
@@ -27,9 +25,10 @@ main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
 main.Parent = screenGui
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
+local mainCorner = Instance.new("UICorner", main)
+mainCorner.CornerRadius = UDim.new(0,10)
 
--- Título
+-- Title
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, -20, 0, 28)
 title.Position = UDim2.new(0, 10, 0, 4)
@@ -40,7 +39,7 @@ title.TextColor3 = Color3.fromRGB(160,90,255)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Text = "Stealer Hub"
 
--- Botão minimizar
+-- Minimize button
 local btnMin = Instance.new("TextButton", main)
 btnMin.Size = UDim2.new(0,24,0,24)
 btnMin.Position = UDim2.new(1, -32, 0, 4)
@@ -63,7 +62,7 @@ status.TextColor3 = Color3.fromRGB(240,240,240)
 status.TextXAlignment = Enum.TextXAlignment.Left
 status.Text = "Posição salva: nenhuma"
 
--- Criação de botões
+-- BUTTON CREATOR
 local function createButton(parent, text, y)
     local b = Instance.new("TextButton", parent)
     b.Size = UDim2.new(0.86, 0, 0, 34)
@@ -74,7 +73,8 @@ local function createButton(parent, text, y)
     b.TextSize = 16
     b.TextColor3 = Color3.fromRGB(255,255,255)
     b.BorderSizePixel = 0
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+    local cr = Instance.new("UICorner", b)
+    cr.CornerRadius = UDim.new(0,8)
 
     local grad = Instance.new("UIGradient", b)
     grad.Color = ColorSequence.new{
@@ -91,19 +91,20 @@ end
 
 local saveBtn = createButton(main, "Salvar posição", 70)
 local tpBtn   = createButton(main, "Teleportar", 112)
+local speedBtn = createButton(main, "Speed Boost", 154)
 
--- Log
+-- LOG
 local log = Instance.new("TextLabel", main)
 log.Size = UDim2.new(1, -20, 0, 20)
-log.Position = UDim2.new(0, 10, 0, 152)
+log.Position = UDim2.new(0, 10, 0, 188)
 log.BackgroundTransparency = 1
 log.Font = Enum.Font.Code
 log.TextSize = 13
 log.TextColor3 = Color3.fromRGB(150,255,150)
 log.TextXAlignment = Enum.TextXAlignment.Left
-log.Text = "[LOG] Janela carregada."
+log.Text = "[LOG] Janela restaurada."
 
--- Mini botão
+-- MINI BUTTON
 local mini = Instance.new("TextButton", screenGui)
 mini.Name = "MiniSteal"
 mini.Size = UDim2.new(0, 60, 0, 34)
@@ -117,76 +118,89 @@ mini.Visible = false
 mini.BorderSizePixel = 0
 Instance.new("UICorner", mini).CornerRadius = UDim.new(0,8)
 
--- Variáveis
+-- Vars
 local savedPos = nil
 local isMin = false
 
--- Salvar posição
+-- Save
 saveBtn.MouseButton1Click:Connect(function()
-    local char = player.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        savedPos = char.HumanoidRootPart.Position
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if root then
+        savedPos = root.Position
         status.Text = "Posição salva!"
-        log.Text = "[LOG] ✅ Posição salva!"
+        log.Text = "[LOG] Success ✅ Posição salva!"
         log.TextColor3 = Color3.fromRGB(120,255,140)
-    else
-        log.Text = "[LOG] ❌ Jogador não encontrado!"
-        log.TextColor3 = Color3.fromRGB(255,120,120)
     end
 end)
 
--- Teleportar
+-- Teleport
 tpBtn.MouseButton1Click:Connect(function()
-    local char = player.Character
-    if char and savedPos and char:FindFirstChild("HumanoidRootPart") then
-        char:MoveTo(savedPos + Vector3.new(0,3,0))
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if savedPos and root then
+        root.CFrame = CFrame.new(savedPos + Vector3.new(0,3,0))
         status.Text = "Teleportado!"
-        log.Text = "[LOG] ✅ Teleportado!"
+        log.Text = "[LOG] Success ✅ Teleportado!"
         log.TextColor3 = Color3.fromRGB(120,255,140)
     else
-        log.Text = "[LOG] ⚠️ Nenhuma posição salva!"
+        log.Text = "[LOG] Nenhuma posição salva!"
         log.TextColor3 = Color3.fromRGB(255,120,120)
     end
 end)
 
--- Minimizar / Restaurar
+-- SPEED BOOST
+speedBtn.MouseButton1Click:Connect(function()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = 70
+        log.Text = "[LOG] Velocidade aumentada para 70 ⚡"
+        log.TextColor3 = Color3.fromRGB(255,220,120)
+    else
+        log.Text = "[LOG] Humanoid não encontrado!"
+        log.TextColor3 = Color3.fromRGB(255,120,120)
+    end
+end)
+
+-- Minimizar
 btnMin.MouseButton1Click:Connect(function()
-    isMin = not isMin
-    if isMin then
-        TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,260,0,0), BackgroundTransparency = 1}):Play()
-        task.delay(0.25, function()
-            main.Visible = false
-            mini.Visible = true
-        end)
+    if not isMin then
+        local t = TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0,260,0,0), BackgroundTransparency = 1})
+        t:Play()
+        t.Completed:Wait()
+        main.Visible = false
+        mini.Visible = true
+        isMin = true
         log.Text = "[LOG] Janela minimizada."
     else
         main.Visible = true
-        mini.Visible = false
         main.Size = UDim2.new(0,260,0,0)
-        TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,260,0,180), BackgroundTransparency = 0}):Play()
+        TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0,260,0,215), BackgroundTransparency = 0}):Play()
+        mini.Visible = false
+        isMin = false
         log.Text = "[LOG] Janela restaurada."
     end
 end)
 
--- Restaurar via mini botão
+-- Restaurar via mini
 mini.MouseButton1Click:Connect(function()
-    isMin = false
     mini.Visible = false
     main.Visible = true
     main.Size = UDim2.new(0,260,0,0)
-    TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,260,0,180), BackgroundTransparency = 0}):Play()
+    TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0,260,0,215), BackgroundTransparency = 0}):Play()
+    isMin = false
     log.Text = "[LOG] Janela restaurada."
 end)
 
--- Recarregar GUI no respawn sem delay nem sumiço
+-- Respawn
 player.CharacterAdded:Connect(function()
-    task.defer(function()
-        if isMin then
-            main.Visible = false
-            mini.Visible = true
-        else
-            mini.Visible = false
-            main.Visible = true
-        end
-    end)
+    task.wait(1)
+    if isMin then
+        main.Visible = false
+        mini.Visible = true
+    else
+        mini.Visible = false
+        main.Visible = true
+    end
 end)
