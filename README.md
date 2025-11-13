@@ -1,336 +1,192 @@
--- KEVIN HUB TESTER - COMPLETO
+--// Stealer Hub (antes "Steal a Rainbow Friends")
+--// Feito por Kevin — GUI fiel ao estilo injection-piter (versão menor e sem delay bug)
+
+if game.CoreGui:FindFirstChild("StealerHubGUI") then
+    game.CoreGui.StealerHubGUI:Destroy()
+end
+
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
-local Camera = workspace.CurrentCamera
-
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
 
--- GUI
-local gui = Instance.new("ScreenGui")
-gui.Name = "KevinHub"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "StealerHubGUI"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = game.CoreGui
 
--- BOTÃO ABRIR
-local openBtn = Instance.new("TextButton", gui)
-openBtn.Size = UDim2.new(0, 40, 0, 40)
-openBtn.Position = UDim2.new(0, 10, 0.5, -20)
-openBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-openBtn.Text = "K"
-openBtn.TextColor3 = Color3.new(1, 1, 1)
-openBtn.Font = Enum.Font.GothamBlack
-openBtn.TextSize = 20
-openBtn.Visible = false
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
+-- MAIN FRAME
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.new(0, 260, 0, 180)
+main.Position = UDim2.new(0.5, -130, 0.45, -90)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = screenGui
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
 
--- FRAME PRINCIPAL
-local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 450, 0, 240)
-mainFrame.Position = UDim2.new(0.5, -225, 0, 20)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.ClipsDescendants = true
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
+-- Título
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, -20, 0, 28)
+title.Position = UDim2.new(0, 10, 0, 4)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Color3.fromRGB(160,90,255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Text = "Stealer Hub"
 
--- MENU LATERAL
-local left = Instance.new("Frame", mainFrame)
-left.Size = UDim2.new(0, 80, 1, 0)
-left.Position = UDim2.new(0, 0, 0, 0)
-left.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Instance.new("UICorner", left).CornerRadius = UDim.new(0, 0)
+-- Botão minimizar
+local btnMin = Instance.new("TextButton", main)
+btnMin.Size = UDim2.new(0,24,0,24)
+btnMin.Position = UDim2.new(1, -32, 0, 4)
+btnMin.BackgroundColor3 = Color3.fromRGB(55,55,55)
+btnMin.Text = "_"
+btnMin.Font = Enum.Font.GothamBold
+btnMin.TextSize = 16
+btnMin.TextColor3 = Color3.fromRGB(255,255,255)
+btnMin.BorderSizePixel = 0
+Instance.new("UICorner", btnMin).CornerRadius = UDim.new(1,0)
 
-local sectionLabel = Instance.new("TextLabel", left)
-sectionLabel.Text = "Kevin"
-sectionLabel.Size = UDim2.new(1, 0, 0, 30)
-sectionLabel.Position = UDim2.new(0, 0, 0, 10)
-sectionLabel.TextColor3 = Color3.new(1, 1, 1)
-sectionLabel.BackgroundTransparency = 1
-sectionLabel.Font = Enum.Font.GothamBold
-sectionLabel.TextSize = 16
+-- Status
+local status = Instance.new("TextLabel", main)
+status.Size = UDim2.new(1, -20, 0, 24)
+status.Position = UDim2.new(0,10,0,36)
+status.BackgroundTransparency = 1
+status.Font = Enum.Font.Gotham
+status.TextSize = 14
+status.TextColor3 = Color3.fromRGB(240,240,240)
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.Text = "Posição salva: nenhuma"
 
--- BOTÃO FECHAR
-local closeBtn = Instance.new("TextButton", mainFrame)
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 5)
-closeBtn.Text = "❌"
-closeBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-closeBtn.TextColor3 = Color3.new(1, 1, 1)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 14
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+-- Criação de botões
+local function createButton(parent, text, y)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(0.86, 0, 0, 34)
+    b.Position = UDim2.new(0.07, 0, 0, y)
+    b.BackgroundColor3 = Color3.fromRGB(135,95,255)
+    b.Text = text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 16
+    b.TextColor3 = Color3.fromRGB(255,255,255)
+    b.BorderSizePixel = 0
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
 
--- SCROLLING BUTTONS
-local buttonFrame = Instance.new("ScrollingFrame", mainFrame)
-buttonFrame.Size = UDim2.new(1, -100, 0, 50)
-buttonFrame.Position = UDim2.new(0, 90, 0, 40)
-buttonFrame.BackgroundTransparency = 1
-buttonFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-buttonFrame.ScrollBarThickness = 6
+    local grad = Instance.new("UIGradient", b)
+    grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180,150,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    }
 
-local layout = Instance.new("UIListLayout", buttonFrame)
-layout.FillDirection = Enum.FillDirection.Horizontal
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 8)
+    local pulse = TweenService:Create(grad, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Rotation = 360})
+    pulse:Play()
 
--- NOTIFICAÇÃO
-local function createNotification(text)
-	local notif = Instance.new("TextLabel", gui)
-	notif.Size = UDim2.new(0, 250, 0, 40)
-	notif.Position = UDim2.new(0.5, 0, 0, 5)
-	notif.AnchorPoint = Vector2.new(0.5, 0)
-	notif.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	notif.TextColor3 = Color3.new(1, 1, 1)
-	notif.Text = text
-	notif.Font = Enum.Font.GothamMedium
-	notif.TextSize = 16
-	notif.BackgroundTransparency = 1
-	notif.TextTransparency = 1
-	notif.BorderSizePixel = 0
-	Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 8)
-
-	TweenService:Create(notif, TweenInfo.new(0.3), {
-		BackgroundTransparency = 0,
-		TextTransparency = 0
-	}):Play()
-
-	task.delay(1, function()
-		TweenService:Create(notif, TweenInfo.new(0.3), {
-			BackgroundTransparency = 1,
-			TextTransparency = 1
-		}):Play()
-		wait(0.3)
-		notif:Destroy()
-	end)
+    return b
 end
 
--- ESTADOS
-local states = {
-	Speed = false,
-	Aimbot = false,
-	ESP = false,
-	Jump = false,
-	Noclip = false,
-	InfiniteJump = false,
-	Fling = false,
-}
+local saveBtn = createButton(main, "Salvar posição", 70)
+local tpBtn   = createButton(main, "Teleportar", 112)
 
--- FUNÇÕES COMPORTAMENTO
-local speedConn, aimbotConn, noclipConn, infJumpConn
-local espFolder = Instance.new("Folder", gui)
+-- Log
+local log = Instance.new("TextLabel", main)
+log.Size = UDim2.new(1, -20, 0, 20)
+log.Position = UDim2.new(0, 10, 0, 152)
+log.BackgroundTransparency = 1
+log.Font = Enum.Font.Code
+log.TextSize = 13
+log.TextColor3 = Color3.fromRGB(150,255,150)
+log.TextXAlignment = Enum.TextXAlignment.Left
+log.Text = "[LOG] Janela carregada."
 
-function setSpeed(on)
-	if speedConn then speedConn:Disconnect() end
-	humanoid.WalkSpeed = on and 50 or 16
-	if on then
-		speedConn = RunService.RenderStepped:Connect(function()
-			humanoid.WalkSpeed = 50
-		end)
-	end
-end
+-- Mini botão
+local mini = Instance.new("TextButton", screenGui)
+mini.Name = "MiniSteal"
+mini.Size = UDim2.new(0, 60, 0, 34)
+mini.Position = UDim2.new(1, -80, 1, -80)
+mini.BackgroundColor3 = Color3.fromRGB(10,10,10)
+mini.Text = "Steal"
+mini.Font = Enum.Font.GothamBold
+mini.TextSize = 15
+mini.TextColor3 = Color3.fromRGB(255,255,255)
+mini.Visible = false
+mini.BorderSizePixel = 0
+Instance.new("UICorner", mini).CornerRadius = UDim.new(0,8)
 
-function setJump(on)
-	humanoid.UseJumpPower = true
-	humanoid.JumpPower = on and 100 or 50
-end
+-- Variáveis
+local savedPos = nil
+local isMin = false
 
-function setInfiniteJump(on)
-	if infJumpConn then infJumpConn:Disconnect() end
-	if on then
-		infJumpConn = UIS.JumpRequest:Connect(function()
-			humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-		end)
-	end
-end
-
-function setFling(on)
-	local root = character:FindFirstChild("HumanoidRootPart")
-	if not root then return end
-	if on then
-		local fling = Instance.new("BodyAngularVelocity", root)
-		fling.Name = "Flinger"
-		fling.AngularVelocity = Vector3.new(999999, 999999, 999999)
-		fling.MaxTorque = Vector3.new(999999, 999999, 999999)
-	else
-		local f = root:FindFirstChild("Flinger")
-		if f then f:Destroy() end
-	end
-end
-
-function setAimbot(on)
-	if aimbotConn then RunService:UnbindFromRenderStep("Aimbot") end
-	if on then
-		RunService:BindToRenderStep("Aimbot", Enum.RenderPriority.Camera.Value + 1, function()
-			local closest, shortest = nil, math.huge
-			for _, plr in ipairs(Players:GetPlayers()) do
-				if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
-					local head = plr.Character.Head
-					local pos, vis = Camera:WorldToViewportPoint(head.Position)
-					if vis then
-						local dist = (Vector2.new(pos.X, pos.Y) - UIS:GetMouseLocation()).Magnitude
-						if dist < shortest then
-							shortest = dist
-							closest = head
-						end
-					end
-				end
-			end
-			if closest then Camera.CFrame = CFrame.new(Camera.CFrame.Position, closest.Position) end
-		end)
-	end
-end
-
-function setESP(on)
-	espFolder:ClearAllChildren()
-	if on then
-		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr ~= player and plr.Character then
-				local h = Instance.new("Highlight", espFolder)
-				h.Adornee = plr.Character
-				h.FillColor = Color3.fromRGB(255, 0, 0)
-				h.OutlineColor = Color3.new(1, 1, 1)
-			end
-		end
-	end
-end
-
-function setNoclip(on)
-	if noclipConn then noclipConn:Disconnect() end
-	if on then
-		noclipConn = RunService.Stepped:Connect(function()
-			for _, part in ipairs(character:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
-				end
-			end
-		end)
-	end
-end
-
--- BOTÕES
-local features = {
-	{Name = "Speed", Func = setSpeed},
-	{Name = "Aimbot", Func = setAimbot},
-	{Name = "ESP", Func = setESP},
-	{Name = "Jump", Func = setJump},
-	{Name = "Noclip", Func = setNoclip},
-	{Name = "InfiniteJump", Func = setInfiniteJump},
-	{Name = "Fling", Func = setFling},
-}
-
-for _, feature in ipairs(features) do
-	local btn = Instance.new("TextButton", buttonFrame)
-	btn.Size = UDim2.new(0, 110, 1, -10)
-	btn.Text = feature.Name .. " [OFF]"
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextScaled = true
-	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	btn.BorderSizePixel = 0
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
-
-	btn.MouseButton1Click:Connect(function()
-		local state = not states[feature.Name]
-		states[feature.Name] = state
-		btn.Text = feature.Name .. (state and " [ON]" or " [OFF]")
-		btn.BackgroundColor3 = state and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
-		createNotification("Success: " .. feature.Name .. (state and " ativado" or " desativado"))
-		feature.Func(state)
-	end)
-end
-
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	buttonFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X + 10, 0, 0)
+-- Salvar posição
+saveBtn.MouseButton1Click:Connect(function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        savedPos = char.HumanoidRootPart.Position
+        status.Text = "Posição salva!"
+        log.Text = "[LOG] ✅ Posição salva!"
+        log.TextColor3 = Color3.fromRGB(120,255,140)
+    else
+        log.Text = "[LOG] ❌ Jogador não encontrado!"
+        log.TextColor3 = Color3.fromRGB(255,120,120)
+    end
 end)
 
--- HAT HUB
-local hatHubBtn = Instance.new("TextButton", mainFrame)
-hatHubBtn.Size = UDim2.new(0, 100, 0, 30)
-hatHubBtn.Position = UDim2.new(0, 100, 0, 100)
-hatHubBtn.Text = "Hat Hub"
-hatHubBtn.Font = Enum.Font.GothamBold
-hatHubBtn.TextColor3 = Color3.new(1, 1, 1)
-hatHubBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Instance.new("UICorner", hatHubBtn).CornerRadius = UDim.new(0, 8)
-
-hatHubBtn.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://rawscripts.net/raw/Just-a-baseplate.-hathub-new-36363"))()
-	createNotification("Hat Hub loaded ✅")
+-- Teleportar
+tpBtn.MouseButton1Click:Connect(function()
+    local char = player.Character
+    if char and savedPos and char:FindFirstChild("HumanoidRootPart") then
+        char:MoveTo(savedPos + Vector3.new(0,3,0))
+        status.Text = "Teleportado!"
+        log.Text = "[LOG] ✅ Teleportado!"
+        log.TextColor3 = Color3.fromRGB(120,255,140)
+    else
+        log.Text = "[LOG] ⚠️ Nenhuma posição salva!"
+        log.TextColor3 = Color3.fromRGB(255,120,120)
+    end
 end)
 
--- HAT ID SYSTEM
-local hatBtn = Instance.new("TextButton", mainFrame)
-hatBtn.Size = UDim2.new(0, 100, 0, 30)
-hatBtn.Position = UDim2.new(0, 210, 0, 100)
-hatBtn.Text = "Hat"
-hatBtn.Font = Enum.Font.GothamBold
-hatBtn.TextColor3 = Color3.new(1, 1, 1)
-hatBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Instance.new("UICorner", hatBtn).CornerRadius = UDim.new(0, 8)
-
-local hatBox = Instance.new("TextBox", mainFrame)
-hatBox.Size = UDim2.new(0, 140, 0, 30)
-hatBox.Position = UDim2.new(0, 100, 0, 140)
-hatBox.PlaceholderText = "Enter Hat ID"
-hatBox.Visible = false
-hatBox.Font = Enum.Font.Gotham
-hatBox.TextColor3 = Color3.new(1, 1, 1)
-hatBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Instance.new("UICorner", hatBox).CornerRadius = UDim.new(0, 8)
-
-local hatConfirm = Instance.new("TextButton", mainFrame)
-hatConfirm.Size = UDim2.new(0, 60, 0, 30)
-hatConfirm.Position = UDim2.new(0, 250, 0, 140)
-hatConfirm.Text = "Equip"
-hatConfirm.Visible = false
-hatConfirm.Font = Enum.Font.GothamBold
-hatConfirm.TextColor3 = Color3.new(1, 1, 1)
-hatConfirm.BackgroundColor3 = Color3.fromRGB(40, 100, 40)
-Instance.new("UICorner", hatConfirm).CornerRadius = UDim.new(0, 8)
-
-hatBtn.MouseButton1Click:Connect(function()
-	hatBox.Visible = not hatBox.Visible
-	hatConfirm.Visible = hatBox.Visible
+-- Minimizar / Restaurar
+btnMin.MouseButton1Click:Connect(function()
+    isMin = not isMin
+    if isMin then
+        TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,260,0,0), BackgroundTransparency = 1}):Play()
+        task.delay(0.25, function()
+            main.Visible = false
+            mini.Visible = true
+        end)
+        log.Text = "[LOG] Janela minimizada."
+    else
+        main.Visible = true
+        mini.Visible = false
+        main.Size = UDim2.new(0,260,0,0)
+        TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,260,0,180), BackgroundTransparency = 0}):Play()
+        log.Text = "[LOG] Janela restaurada."
+    end
 end)
 
-hatConfirm.MouseButton1Click:Connect(function()
-	local id = tonumber(hatBox.Text)
-	if not id then
-		createNotification("ID inválido ❌")
-		return
-	end
-	local ok, obj = pcall(function() return game:GetObjects("rbxassetid://"..id)[1] end)
-	if ok and obj and obj:IsA("Accessory") then
-		obj.Parent = character
-		humanoid:AddAccessory(obj)
-		createNotification("Hat equipado ✅")
-	else
-		createNotification("ID inválido ❌")
-	end
+-- Restaurar via mini botão
+mini.MouseButton1Click:Connect(function()
+    isMin = false
+    mini.Visible = false
+    main.Visible = true
+    main.Size = UDim2.new(0,260,0,0)
+    TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,260,0,180), BackgroundTransparency = 0}):Play()
+    log.Text = "[LOG] Janela restaurada."
 end)
 
--- OPEN / CLOSE
-closeBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = false
-	openBtn.Visible = true
-end)
-
-openBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = true
-	openBtn.Visible = false
-end)
-
--- RELOAD POWERS AFTER DEATH
-player.CharacterAdded:Connect(function(char)
-	character = char
-	humanoid = char:WaitForChild("Humanoid")
-	for name, state in pairs(states) do
-		if state and _G["set"..name] then
-			_G["set"..name](true)
-		end
-	end
+-- Recarregar GUI no respawn sem delay nem sumiço
+player.CharacterAdded:Connect(function()
+    task.defer(function()
+        if isMin then
+            main.Visible = false
+            mini.Visible = true
+        else
+            mini.Visible = false
+            main.Visible = true
+        end
+    end)
 end)
