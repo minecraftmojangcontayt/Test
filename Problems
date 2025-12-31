@@ -1,11 +1,12 @@
--- Steal A Turma Do Problems | Compact Modern Menu
+-- Steal A Turma Do Problems | Compact Modern Menu (BUG FIXED)
 
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
 local Run = game:GetService("RunService")
 local plr = Players.LocalPlayer
 
-local savedCF, noclip = nil, false
+local savedCF
+local noclip = false
+local antiRagdoll = false
 
 -- GUI
 local gui = Instance.new("ScreenGui", plr.PlayerGui)
@@ -23,9 +24,9 @@ open.TextColor3 = Color3.new(1,1,1)
 open.BackgroundColor3 = Color3.fromRGB(15,15,15)
 Instance.new("UICorner",open).CornerRadius = UDim.new(0,10)
 
--- Main Frame (SMALL)
+-- Main Frame
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.fromOffset(260,190)
+frame.Size = UDim2.fromOffset(260,215)
 frame.Position = UDim2.fromScale(.5,.5)
 frame.AnchorPoint = Vector2.new(.5,.5)
 frame.Visible = false
@@ -55,7 +56,7 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.new(1,1,1)
 title.BackgroundTransparency = 1
 
--- Close Button
+-- Close
 local close = Instance.new("TextButton", frame)
 close.Size = UDim2.fromOffset(24,24)
 close.Position = UDim2.new(1,-30,0,4)
@@ -66,7 +67,7 @@ close.TextColor3 = Color3.new(1,1,1)
 close.BackgroundColor3 = Color3.fromRGB(40,40,40)
 Instance.new("UICorner",close).CornerRadius = UDim.new(1,0)
 
--- Button Creator (SMALL)
+-- Button creator
 local function btn(text,y)
 	local b = Instance.new("TextButton", frame)
 	b.Size = UDim2.new(.85,0,0,30)
@@ -84,6 +85,7 @@ end
 local save = btn("Save Position",45)
 local tp   = btn("Teleport",85)
 local nc   = btn("Noclip: OFF",125)
+local ar   = btn("Anti Ragdoll: OFF",165)
 
 -- Open / Close
 open.MouseButton1Click:Connect(function()
@@ -113,18 +115,47 @@ tp.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Noclip
+-- Noclip Toggle (FIXED)
 nc.MouseButton1Click:Connect(function()
 	noclip = not noclip
 	nc.Text = noclip and "Noclip: ON" or "Noclip: OFF"
+
+	if not noclip and plr.Character then
+		for _,p in pairs(plr.Character:GetDescendants()) do
+			if p:IsA("BasePart") then
+				p.CanCollide = true
+			end
+		end
+	end
 end)
 
+-- Anti Ragdoll Toggle (FIXED)
+ar.MouseButton1Click:Connect(function()
+	antiRagdoll = not antiRagdoll
+	ar.Text = antiRagdoll and "Anti Ragdoll: ON" or "Anti Ragdoll: OFF"
+end)
+
+-- Systems (CLEAN)
 Run.Stepped:Connect(function()
-	if noclip and plr.Character then
-		for _,p in pairs(plr.Character:GetDescendants()) do
+	local char = plr.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+	if not char then return end
+
+	if noclip then
+		for _,p in pairs(char:GetDescendants()) do
 			if p:IsA("BasePart") then
 				p.CanCollide = false
 			end
+		end
+	end
+
+	if antiRagdoll and hum then
+		if hum.PlatformStand then
+			hum.PlatformStand = false
+		end
+		if hum:GetState() == Enum.HumanoidStateType.Physics then
+			hum:ChangeState(Enum.HumanoidStateType.GettingUp)
 		end
 	end
 end)
