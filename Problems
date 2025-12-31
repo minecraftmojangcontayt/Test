@@ -1,0 +1,153 @@
+-- Steal A Turma Do Problems | Compact Modern Menu
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local Run = game:GetService("RunService")
+local plr = Players.LocalPlayer
+
+local savedCF, noclip = nil, false
+
+-- GUI
+local gui = Instance.new("ScreenGui", plr.PlayerGui)
+gui.ResetOnSpawn = false
+
+-- Open Button
+local open = Instance.new("TextButton", gui)
+open.Size = UDim2.fromOffset(120,30)
+open.Position = UDim2.new(.5,0,0,10)
+open.AnchorPoint = Vector2.new(.5,0)
+open.Text = "Open Menu"
+open.Font = Enum.Font.GothamBold
+open.TextSize = 13
+open.TextColor3 = Color3.new(1,1,1)
+open.BackgroundColor3 = Color3.fromRGB(15,15,15)
+Instance.new("UICorner",open).CornerRadius = UDim.new(0,10)
+
+-- Main Frame (SMALL)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.fromOffset(260,190)
+frame.Position = UDim2.fromScale(.5,.5)
+frame.AnchorPoint = Vector2.new(.5,.5)
+frame.Visible = false
+frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,16)
+
+-- Gradient
+local grad = Instance.new("UIGradient", frame)
+grad.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(25,25,25)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(5,5,5))
+}
+
+-- Top Bar (Drag)
+local top = Instance.new("Frame", frame)
+top.Size = UDim2.new(1,0,0,32)
+top.BackgroundTransparency = 1
+
+-- Title
+local title = Instance.new("TextLabel", top)
+title.Size = UDim2.new(1,-35,1,0)
+title.Position = UDim2.fromOffset(8,0)
+title.Text = "Steal A Turma Do Problems"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 13
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+
+-- Close Button
+local close = Instance.new("TextButton", frame)
+close.Size = UDim2.fromOffset(24,24)
+close.Position = UDim2.new(1,-30,0,4)
+close.Text = "X"
+close.Font = Enum.Font.GothamBold
+close.TextSize = 12
+close.TextColor3 = Color3.new(1,1,1)
+close.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner",close).CornerRadius = UDim.new(1,0)
+
+-- Button Creator (SMALL)
+local function btn(text,y)
+	local b = Instance.new("TextButton", frame)
+	b.Size = UDim2.new(.85,0,0,30)
+	b.Position = UDim2.new(.075,0,0,y)
+	b.Text = text
+	b.Font = Enum.Font.Gotham
+	b.TextSize = 13
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+	return b
+end
+
+-- Buttons
+local save = btn("Save Position",45)
+local tp   = btn("Teleport",85)
+local nc   = btn("Noclip: OFF",125)
+
+-- Open / Close
+open.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	open.Visible = false
+end)
+
+close.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	open.Visible = true
+end)
+
+-- Save Position
+save.MouseButton1Click:Connect(function()
+	local c = plr.Character
+	if c and c:FindFirstChild("HumanoidRootPart") then
+		savedCF = c.HumanoidRootPart.CFrame
+		save.Text = "Position Saved"
+	end
+end)
+
+-- Teleport
+tp.MouseButton1Click:Connect(function()
+	local c = plr.Character
+	if savedCF and c and c:FindFirstChild("HumanoidRootPart") then
+		c.HumanoidRootPart.CFrame = savedCF
+	end
+end)
+
+-- Noclip
+nc.MouseButton1Click:Connect(function()
+	noclip = not noclip
+	nc.Text = noclip and "Noclip: ON" or "Noclip: OFF"
+end)
+
+Run.Stepped:Connect(function()
+	if noclip and plr.Character then
+		for _,p in pairs(plr.Character:GetDescendants()) do
+			if p:IsA("BasePart") then
+				p.CanCollide = false
+			end
+		end
+	end
+end)
+
+-- Drag System
+local dragging, dragStart, startPos
+top.InputBegan:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = i.Position
+		startPos = frame.Position
+		i.Changed:Connect(function()
+			if i.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+
+top.InputChanged:Connect(function(i)
+	if dragging then
+		local d = i.Position - dragStart
+		frame.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + d.X,
+			startPos.Y.Scale, startPos.Y.Offset + d.Y
+		)
+	end
+end)
